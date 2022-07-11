@@ -26,8 +26,11 @@ public class Link {
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "link_id")
+    private String linkName;
+    private LocalDateTime totalElapsedTime;
+    private String numberOfKilobytesDownloaded;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "website_id")
     private Website website;
+
 }

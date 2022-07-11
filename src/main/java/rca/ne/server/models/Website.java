@@ -24,6 +24,9 @@ public class Website {
     LocalDateTime startDate;
     LocalDateTime endDate;
     LocalDateTime totalElapsedTime;
-    Long numberOfKilobytesDownloaded;
+    String numberOfKilobytesDownloaded;
+    private Website(String name) {
+        this.name = name;
+    }
 
 }
