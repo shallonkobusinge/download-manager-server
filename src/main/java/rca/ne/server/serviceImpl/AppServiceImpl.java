@@ -59,7 +59,9 @@ public class AppServiceImpl implements AppService {
             website.setName(url.getHost());
             BufferedReader readr =
                     new BufferedReader(new InputStreamReader(url.openStream()));
-            File file = new File("src/main/resources/static/websites/"+url.getHost()+".html");
+            boolean fileDirectory = new File("src/main/resources/static/websites/" + url.getHost()).mkdir();
+            System.out.println(fileDirectory);
+            File file = new File("src/main/resources/static/websites/"+url.getHost()+"/"+url.getHost()+".html");
             FileWriter fileWriter ;
             if(!file.exists()){
                 fileWriter = new FileWriter(file);
@@ -80,11 +82,6 @@ public class AppServiceImpl implements AppService {
 
             website.setNumberOfKilobytesDownloaded(filesize_in_kiloBytes(file));
             website.setTotalElapsedTime(website.getEndDate().minusNanos(website.getStartDate().getNano()));
-//            System.out.println("Name "+website.getName());
-//            System.out.println("Start Date "+website.getStartDate());
-//            System.out.println("End Date "+website.getEndDate());
-//            System.out.println("Number of Kilobytes Downloaded "+website.getNumberOfKilobytesDownloaded());
-//            System.out.println("Total Elapsed Time "+website.getTotalElapsedTime());
 
              websiteRepository.save(website);
             Set<String> linksFromTheSite = new HashSet<>();
