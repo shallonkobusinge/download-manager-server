@@ -1,5 +1,9 @@
 package rca.ne.server.serviceImpl;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import rca.ne.server.dtos.CreateLinkDTO;
 import rca.ne.server.models.Link;
@@ -10,21 +14,16 @@ import rca.ne.server.services.AppService;
 import rca.ne.server.utils.ResourceNotFoundException;
 
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.List;
 
 @Service
 public class AppServiceImpl implements AppService {
@@ -42,30 +41,37 @@ public class AppServiceImpl implements AppService {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
         LocalDateTime currentTime = LocalDateTime.now();
         Website website = new Website();
+        website.setStartDate(LocalDateTime.now());
+
+
         Optional<Website> websiteExists = websiteRepository.findByName(webpage);
-
-
         try {
-            if(websiteExists.isPresent()){
+            if (websiteExists.isPresent()) {
                 throw new ResourceNotFoundException("Website already exists");
             }
-            website.setStartDate(currentTime);
 
-            if(!isValid(webpage)){
+
+            if (!isValid(webpage)) {
                 throw new ResourceNotFoundException("Website", "url", webpage);
             }
+
             // Create URL object
             URL url = new URL(webpage);
+            URLConnection connection = url.openConnection();
+            HttpURLConnection httpConnection = null;
+            if (!(connection instanceof HttpURLConnection)) {
+                throw new ResourceNotFoundException("Url is not a valid http url");
+            }
             website.setName(url.getHost());
             BufferedReader readr =
-                    new BufferedReader(new InputStreamReader(url.openStream()));
+                    new BufferedReader(new InputStreamReader(connection.getInputStream()));
             boolean fileDirectory = new File("src/main/resources/static/websites/" + url.getHost()).mkdir();
-            System.out.println(fileDirectory);
-            File file = new File("src/main/resources/static/websites/"+url.getHost()+"/"+url.getHost()+".html");
-            FileWriter fileWriter ;
-            if(!file.exists()){
+
+            File file = new File("src/main/resources/static/websites/" + url.getHost() + "/" + url.getHost() + ".html");
+            FileWriter fileWriter;
+            if (!file.exists()) {
                 fileWriter = new FileWriter(file);
-            }else{
+            } else {
                 fileWriter = new FileWriter(file, true);
             }
 
@@ -78,9 +84,8 @@ public class AppServiceImpl implements AppService {
             }
             readr.close();
             writer.close();
-            website.setEndDate(LocalDateTime.now());
-
             website.setNumberOfKilobytesDownloaded(filesize_in_kiloBytes(file));
+            website.setEndDate(LocalDateTime.now());
             website.setTotalElapsedTime(website.getEndDate().minusNanos(website.getStartDate().getNano()));
 
              websiteRepository.save(website);

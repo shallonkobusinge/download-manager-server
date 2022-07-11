@@ -14,4 +14,5 @@ public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String model,String column,String value){
         super(model+" with "+column+" ["+value+"] not found");
     }
+
 }
