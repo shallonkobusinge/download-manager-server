@@ -11,6 +11,7 @@ import rca.ne.server.utils.ResourceNotFoundException;
 
 import java.io.*;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -37,22 +38,30 @@ public class AppServiceImpl implements AppService {
 
     @Override
     public Website downloadWebpage(String webpage) {
-        System.out.println("Downloading webpage: " + webpage);
+
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
         LocalDateTime currentTime = LocalDateTime.now();
-        Website website = findByName(webpage);
+        Website website = new Website();
+        Optional<Website> websiteExists = websiteRepository.findByName(webpage);
+
+
         try {
+            if(websiteExists.isPresent()){
+                throw new ResourceNotFoundException("Website already exists");
+            }
+            website.setStartDate(currentTime);
+            website.setName(webpage);
             if(!isValid(webpage)){
                 throw new ResourceNotFoundException("Website", "url", webpage);
             }
-            website.setStartDate(currentTime);
             // Create URL object
             URL url = new URL(webpage);
+
             BufferedReader readr =
                     new BufferedReader(new InputStreamReader(url.openStream()));
             // Enter filename in which you want to download
             BufferedWriter writer =
-                    new BufferedWriter(new FileWriter("index.html"));
+                    new BufferedWriter(new FileWriter("C:\\Users\\B.User\\Documents\\JAVA\\index.html"));
 
             // read each line from stream till end
             String line;
@@ -62,14 +71,14 @@ public class AppServiceImpl implements AppService {
             readr.close();
             writer.close();
             website.setEndDate(LocalDateTime.now());
-            File file = new File("index.html");
+            File file = new File("C:\\Users\\B.User\\Documents\\JAVA\\index.html");
             website.setNumberOfKilobytesDownloaded(filesize_in_kiloBytes(file));
             website.setTotalElapsedTime(website.getEndDate().minusNanos(website.getStartDate().getNano()));
-            System.out.println("Name "+website.getName());
-            System.out.println("Start Date "+website.getStartDate());
-            System.out.println("End Date "+website.getEndDate());
-            System.out.println("Number of Kilobytes Downloaded "+website.getNumberOfKilobytesDownloaded());
-            System.out.println("Total Elapsed Time "+website.getTotalElapsedTime());
+//            System.out.println("Name "+website.getName());
+//            System.out.println("Start Date "+website.getStartDate());
+//            System.out.println("End Date "+website.getEndDate());
+//            System.out.println("Number of Kilobytes Downloaded "+website.getNumberOfKilobytesDownloaded());
+//            System.out.println("Total Elapsed Time "+website.getTotalElapsedTime());
 
              websiteRepository.save(website);
             Set<String> linksFromTheSite = new HashSet<>();
@@ -91,8 +100,11 @@ public class AppServiceImpl implements AppService {
                 linksFromTheSite.add(element.attr("href"));
                 createLinkDTO.setLinkName(element.attr("href"));
                 createLinkDTO.setWebsiteName(webpage);
+                saveLink(element.attr("href"), website);
 
             }
+            System.out.println("=========================================================");
+            System.out.println("LINKKKKKKKKKKKKKKKKS");
             for (String single : linksFromTheSite) {
                 System.out.println(single);
             }
@@ -130,12 +142,13 @@ public class AppServiceImpl implements AppService {
     }
 
     @Override
-    public Link saveLink(CreateLinkDTO dto) throws IOException {
-        Website website = findByName(dto.getWebsiteName());
+    public Link saveLink(String name, Website website) throws IOException {
+        File file = new File("C:\\Users\\B.User\\Documents\\JAVA\\index.html");
          Link link = new Link();
         link.setWebsite(website);
+        link.setLinkName(name);
         link.setTotalElapsedTime(website.getEndDate().minusNanos(website.getStartDate().getNano()));
-        link.setNumberOfKilobytesDownloaded(filesize_in_kiloBytes(new File(link.getLinkName())));
+        link.setNumberOfKilobytesDownloaded(filesize_in_kiloBytes(file));
         linkRepository.save(link);
         return link;
     }
@@ -149,8 +162,9 @@ public class AppServiceImpl implements AppService {
     public static boolean isValid(String url) {
         /* Try creating a valid URL */
         try {
+            System.out.println("To url "+new URL(url).toURI());
+//            new URL(url).toURI();
 
-            new URL(url).toURI();
             return true;
         }
 

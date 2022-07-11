@@ -1,10 +1,7 @@
 package rca.ne.server.controllers;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import rca.ne.server.dtos.CreateLinkDTO;
 import rca.ne.server.models.Website;
 import rca.ne.server.services.AppService;
@@ -32,13 +29,14 @@ public class AppController {
     public ResponseEntity<?> getAllLinksDownloaded() {
         return ResponseEntity.ok(appService.getAllLinksDownloaded());
     }
-    @PostMapping("/links")
-    public ResponseEntity<?> saveLink(CreateLinkDTO link) throws IOException {
-        return ResponseEntity.ok(appService.saveLink(link));
-    }
+//    @PostMapping("/links")
+//    public ResponseEntity<?> saveLink(String link) throws IOException {
+//        return ResponseEntity.ok(appService.saveLink(link));
+//    }
     //download a webpage give a url
     @PostMapping("/websites")
-    public ResponseEntity<?> downloadWebpage(String webpage) {
+    public ResponseEntity<?> downloadWebpage(@RequestBody String webpage) {
+        System.out.println("Url "+ webpage);
         return ResponseEntity.ok(appService.downloadWebpage(webpage));
     }
 }

@@ -16,7 +16,7 @@ public interface AppService {
     List<Website> getAllWebsitesDownloaded();
     //get all links downloaded
     List<Link> getAllLinksDownloaded();
-    Link saveLink(CreateLinkDTO link) throws IOException;
+    Link saveLink(String name, Website website) throws IOException;
 
     String getHello();
 }
