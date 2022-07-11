@@ -50,18 +50,24 @@ public class AppServiceImpl implements AppService {
                 throw new ResourceNotFoundException("Website already exists");
             }
             website.setStartDate(currentTime);
-            website.setName(webpage);
+
             if(!isValid(webpage)){
                 throw new ResourceNotFoundException("Website", "url", webpage);
             }
             // Create URL object
             URL url = new URL(webpage);
-
+            website.setName(url.getHost());
             BufferedReader readr =
                     new BufferedReader(new InputStreamReader(url.openStream()));
-            // Enter filename in which you want to download
-            BufferedWriter writer =
-                    new BufferedWriter(new FileWriter("C:\\Users\\B.User\\Documents\\JAVA\\index.html"));
+            File file = new File("src/main/resources/static/websites/"+url.getHost()+".html");
+            FileWriter fileWriter ;
+            if(!file.exists()){
+                fileWriter = new FileWriter(file);
+            }else{
+                fileWriter = new FileWriter(file, true);
+            }
+
+            BufferedWriter writer = new BufferedWriter(fileWriter);
 
             // read each line from stream till end
             String line;
@@ -71,7 +77,7 @@ public class AppServiceImpl implements AppService {
             readr.close();
             writer.close();
             website.setEndDate(LocalDateTime.now());
-            File file = new File("C:\\Users\\B.User\\Documents\\JAVA\\index.html");
+
             website.setNumberOfKilobytesDownloaded(filesize_in_kiloBytes(file));
             website.setTotalElapsedTime(website.getEndDate().minusNanos(website.getStartDate().getNano()));
 //            System.out.println("Name "+website.getName());
@@ -121,9 +127,10 @@ public class AppServiceImpl implements AppService {
     }
 
     @Override
-    public Website findByName(String name) {
+    public Website findByName(String name) throws MalformedURLException {
+        URL url = new URL(name);
         //find by name if not found create a new website
-        Optional<Website> website = websiteRepository.findByName(name);
+        Optional<Website> website = websiteRepository.findByName(url.getHost());
         if(website.isEmpty()){
             downloadWebpage(name);
         }
@@ -144,11 +151,18 @@ public class AppServiceImpl implements AppService {
     @Override
     public Link saveLink(String name, Website website) throws IOException {
         File file = new File("C:\\Users\\B.User\\Documents\\JAVA\\index.html");
+
          Link link = new Link();
         link.setWebsite(website);
         link.setLinkName(name);
         link.setTotalElapsedTime(website.getEndDate().minusNanos(website.getStartDate().getNano()));
         link.setNumberOfKilobytesDownloaded(filesize_in_kiloBytes(file));
+        System.out.println("=========================================================");
+        System.out.println("Website Name "+link.getWebsite().getName());
+        System.out.println("Link Name "+link.getLinkName());
+        System.out.println("Total Elapsed Time "+link.getTotalElapsedTime());
+        System.out.println("Number of Kilobytes Downloaded "+link.getNumberOfKilobytesDownloaded());
+        System.out.println("=========================================================");
         linkRepository.save(link);
         return link;
     }
