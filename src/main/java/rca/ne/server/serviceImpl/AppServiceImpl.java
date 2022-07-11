@@ -111,11 +111,11 @@ public class AppServiceImpl implements AppService {
                 saveLink(element.attr("href"), website);
 
             }
-            System.out.println("=========================================================");
-            System.out.println("LINKKKKKKKKKKKKKKKKS");
-            for (String single : linksFromTheSite) {
-                System.out.println(single);
-            }
+//            System.out.println("=========================================================");
+//            System.out.println("LINKKKKKKKKKKKKKKKKS");
+//            for (String single : linksFromTheSite) {
+//                System.out.println(single);
+//            }
         }
 
         // Exceptions
